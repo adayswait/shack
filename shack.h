@@ -3,7 +3,6 @@
 
 #define SHACK_VERSION "0.1"
 #define SHACK_DATE "2020-01-10"
-
 #include <stdint.h> /* for int64_t */
 
 typedef int64_t shack_int;   /* This sets the size of integers in Scheme; it needs to be big enough to accomodate a C pointer. */

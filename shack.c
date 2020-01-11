@@ -9,6 +9,7 @@
 #elif defined(_WIN32)
 #define HAVE_COMPLEX_NUMBERS 0
 #define HAVE_COMPLEX_TRIG 0
+#define MUS_CONFIG_H_LOADED 1
 #else
 #define HAVE_COMPLEX_NUMBERS 0
 #define HAVE_COMPLEX_TRIG 0
@@ -247,6 +248,18 @@
 #endif
 #endif
 #include <io.h>
+#ifndef F_OK
+#define F_OK 0	/* Check for file existence */
+#endif
+#ifndef X_OK
+#define	X_OK 1	/* Check for execute permission. */
+#endif
+#ifndef W_OK
+#define W_OK 2	/* Check for write permission */
+#endif
+#ifndef R_OK
+#define R_OK 4	/* Check for read permission */
+#endif
 #pragma warning(disable : 4244) /* conversion might cause loss of data warning */
 #endif
 
@@ -12826,8 +12839,12 @@ static shack_pointer mpc_to_big_complex(shack_scheme *sc, mpc_t val);
 #else
 #define HAVE_OVERFLOW_CHECKS 0
 #if (!WITH_GMP)
+#ifdef _WIN32
+#pragma message("no arithmetic overflow checks in this version of shack")
+#else
 #warning "no arithmetic overflow checks in this version of shack"
-#endif
+#endif // _WIN32
+#endif // WITH_GMP
 #endif
 #endif
 
@@ -12888,22 +12905,26 @@ static bool is_inf(shack_double x)
 #endif
 
 #else
+
 static bool is_inf(shack_double x)
 {
   return ((x == x) && (is_NaN(x - x)));
 } /* Another possibility: (x * 0) != 0 */
-
 /* in MS C, we need to provide inverse hyperbolic trig funcs and cbrt */
+
+#ifndef _CRT_FUNCTIONS_REQUIRED
 static double asinh(double x) { return (log(x + sqrt(1.0 + x * x))); }
 static double acosh(double x) { return (log(x + sqrt(x * x - 1.0))); }
 /* perhaps less prone to numerical troubles (untested): 2.0 * log(sqrt(0.5 * (x + 1.0)) + sqrt(0.5 * (x - 1.0))) */
 static double atanh(double x) { return (log((1.0 + x) / (1.0 - x)) / 2.0); }
 static double cbrt(double x)
 {
-  if (x >= 0.0)
-    return (pow(x, 1.0 / 3.0));
-  return (-pow(-x, 1.0 / 3.0));
+	if (x >= 0.0)
+		return (pow(x, 1.0 / 3.0));
+	return (-pow(-x, 1.0 / 3.0));
 }
+#endif // !_CRT_FUNCTIONS_REQUIRED
+
 #endif /* windows */
 #endif /* sun */
 
@@ -28891,11 +28912,11 @@ static block_t *search_load_path(shack_scheme *sc, const char *name)
     shack_pointer dir_names;
     /* linux: PATH_MAX: 4096, windows: MAX_PATH: unlimited?, Mac: 1016?, BSD: MAX_PATH_LENGTH: 1024 */
 #if MS_WINDOWS || defined(__linux__)
-#define FILENAME_MAX 4096
+#define MAX_PATH_LEN 4096
 #else
-#define FILENAME_MAX 1024
+#define MAX_PATH_LEN 1024
 #endif
-    b = mallocate(sc, FILENAME_MAX);
+    b = mallocate(sc, MAX_PATH_LEN);
     filename = (char *)block_data(b);
 
     for (dir_names = lst; is_pair(dir_names); dir_names = cdr(dir_names))
@@ -28906,9 +28927,9 @@ static block_t *search_load_path(shack_scheme *sc, const char *name)
       {
         filename[0] = '\0';
         if (new_dir[strlen(new_dir) - 1] == '/')
-          catstrs(filename, FILENAME_MAX, new_dir, name, NULL);
+          catstrs(filename, MAX_PATH_LEN, new_dir, name, NULL);
         else
-          catstrs(filename, FILENAME_MAX, new_dir, "/", name, NULL);
+          catstrs(filename, MAX_PATH_LEN, new_dir, "/", name, NULL);
         if (access(filename, F_OK) == 0)
           return (b);
       }
@@ -29639,7 +29660,7 @@ shack_pointer shack_eval_c_string_with_environment(shack_scheme *sc, const char 
   TRACK(sc);
   push_stack_direct(sc, OP_GC_PROTECT, sc->args, sc->code);
   /* maybe this should just use locals? (GC protection is not the issue here),
-   *   but this is way down in the noise -- read/eval below are 99% of the computing
+   * but this is way down in the noise -- read/eval below are 99% of the computing
    */
   port = shack_open_input_string(sc, str);
   code = shack_read(sc, port);
@@ -43258,7 +43279,7 @@ void local_qsort_r(void *base, size_t nmemb, size_t size, int (*compar)(const vo
 #else
 #if MS_WINDOWS
   struct sort_r_data tmp = {arg, compar};
-  qsort_s(*base, nmemb, size, &sort_r_arg_swap, &tmp);
+  qsort_s(base, nmemb, size, &sort_r_arg_swap, &tmp);
 #else
   /* from the Net somewhere, by "Pete", about 25 times slower than libc's qsort_r in this context */
   if (nmemb > 1)
@@ -105643,7 +105664,7 @@ void shack_repl(shack_scheme *sc)
   }
 }
 
-#if WITH_MAIN
+#ifdef WITH_MAIN
 
 #if (!MS_WINDOWS)
 static char *realdir(const char *filename) /* this code courtesy Lassi Kortela 4-Nov-19 */
@@ -105699,18 +105720,7 @@ int main(int argc, char **argv)
     shack_load(sc, "repl.scm"); /* this is libc dependent */
     shack_eval_c_string(sc, "((*repl* 'run))");
 #else
-    while (1) /* a minimal repl -- taken from shack.html */
-    {
-      char buffer[512];
-      char response[1024];
-      fprintf(stdout, "\n> ");
-      fgets(buffer, 512, stdin);
-      if ((buffer[0] != '\n') || (strlen(buffer) > 1))
-      {
-        sprintf(response, "(write %s)", buffer);
-        shack_eval_c_string(sc, response);
-      }
-    }
+	dumb_repl(sc);
 #endif
   }
   return (0);

@@ -1,3 +1,5 @@
 libc_shack.c
 libc_shack.so
 repl
+out
+.vs
