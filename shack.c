@@ -105667,20 +105667,24 @@ void shack_repl(shack_scheme *sc)
 #ifdef WITH_MAIN
 
 #if (!MS_WINDOWS)
-static char *realdir(const char *filename) /* this code courtesy Lassi Kortela 4-Nov-19 */
+static char *realdir(const char *filename) 
 {
   char *path;
   char *p;
-  /* shack_repl wants to load libc_shack.o (for tcsetattr et al), but if it is started in a directory other than the libc_shack.so
-   *   directory, it fails (it tries to build the library but that requires shack.h and libc.scm).  So here we are trying to
-   *   guess the libc_shack directory from the command line program name.  This can't work in general, but it works often
-   *   enough to be worth the effort.  If SHACK_LOAD_PATH is set, it is used instead.
+  /**shack_repl wants to load libc_shack.o (for tcsetattr et al), 
+   * but if it is started in a directory other than the libc_shack.so directory,
+   * it fails and then it will try to build the lib but that requires 
+   * shack.h and libc.scm.  So here we are trying to guess the libc_shack.so 
+   * directory from the command line program name.  This can't work in general, 
+   * but it works often enough to be worth the effort.
+   * If SHACK_LOAD_PATH is set, it is used instead.
    */
   if (!strchr(filename, '/'))
   {
     if (!file_probe("libc_shack.so"))
     {
-      fprintf(stderr, "%s needs libc_shack.so (give the explicit pathname)\n", filename); /* env PATH=/home/bil/cl repl */
+      fprintf(stderr, "%s needs libc_shack.so (give the explicit pathname)\n",
+       filename); /* env PATH=/home/bil/cl repl */
       exit(2);
     }
     return (NULL); /* we're in the libc_shack.so directory, I hope (local shack might not match local libc_shack.so) */
@@ -105726,114 +105730,4 @@ int main(int argc, char **argv)
   return (0);
 }
 
-// int main(int argc, char **argv)
-// {
-//   shack_scheme *sc;
-
-//   sc = shack_init();
-//   fprintf(stderr, "shack: %s\n", SHACK_DATE);
-
-//   if (argc == 2)
-//     {
-//       fprintf(stderr, "load %s\n", argv[1]);
-//       if (!shack_load(sc, argv[1]))
-// 	{
-// 	  fprintf(stderr, "can't load %s\n", argv[1]);
-// 	  return(2);
-// 	}
-//     }
-//   else
-//     {
-// #if MS_WINDOWS
-//       dumb_repl(sc);
-// #else
-// #ifdef SHACK_LOAD_PATH
-//       shack_add_to_load_path(sc, SHACK_LOAD_PATH);
-// #else
-//       char *dir;
-//       dir = realdir(argv[0]);
-//       if (dir)
-// 	{
-// 	  shack_add_to_load_path(sc, dir);
-// 	  free(dir);
-// 	}
-// #endif
-//       shack_repl(sc);
-// #endif
-//     }
-//   return(0);
-// }
-
-/* in Linux:  gcc shack.c -o repl -DWITH_MAIN -I. -O2 -g -ldl -lm -Wl,-export-dynamic
- * in *BSD:   gcc shack.c -o repl -DWITH_MAIN -I. -O2 -g -lm -Wl,-export-dynamic
- * in OSX:    gcc shack.c -o repl -DWITH_MAIN -I. -O2 -g -lm
- * (clang also needs LDFLAGS="-Wl,-export-dynamic" in Linux and "-fPIC")
- */
 #endif
-
-/* ------------------------------------------------------------------------------------------
- *
- * new snd version: snd.h configure.ac HISTORY.Snd NEWS barchive diffs, /usr/ccrma/web/html/software/snd/index.html, ln -s new-ftp-file to that directory
- *
- * ------------------------------
- *           18  |  19  |  20.0
- * ------------------------------
- * tpeak     167 |  117 |
- * tauto     748 |  633 |
- * tshoot   1176 |  777 |
- * tref     1093 |  779 |
- * index     971 |  889 |
- * shacktest   1776 | 1711 |
- * lt       2278 | 2072 |
- * tcopy    2434 | 2264 |
- * tmisc    2852 | 2284 |
- * tform    2472 | 2289 |
- * tread    2449 | 2394 |
- * tvect    6189 | 2430 |
- * tmat     6072 | 2478 |
- * fbench   2974 | 2643 |
- * dup      6333 | 2669 |
- * trclo    7985 | 2791 |
- * tb       3251 | 2799 |
- * tmap     3238 | 2883 |
- * titer    3962 | 2911 |
- * tsort    4156 | 3043 |
- * tset     6616 | 3083 |
- * tmac     3391 | 3186 |
- * teq      4081 | 3804 |
- * tfft     4288 | 3816 |
- * tlet     5409 | 4613 |
- * tclo     6206 | 4896 |
- * trec     17.8 | 6318 |
- * thash    10.3 | 6805 |
- * tgen     11.7 | 11.0 |
- * tall     16.4 | 15.4 |
- * calls    40.3 | 35.9 |
- * sg       85.8 | 70.4 |
- * lg      115.9 |104.9 |
- * tbig    264.5 |178.0 |
- * -----------------------------
- *
- * combiner for opt funcs (pp/pi etc) [p_p+p_pp to p_d+d_dd...][p_any|p|d|i|b = cf_opt_any now, if sig, unchecked]
- * optimize_expression|syntax extended to other syntax_a cases?
- *   let_a_fx (begin_fx) including set! if it's a local variable and fx-following uses "p" for it
- *   set! in opt and fx is ok if not used elsewhere or known "p" case (implicit vector etc)
- * append for set? -- if setter a safe closure, call direct without copied args
- *   op: let_temp_init_2|done1, set_with_let_1|2 [77635|59], op_set1|2--can implicit_set be split?]
- * if (lambda...) as arg (to g_set_setter for example), op_lambda->check_lambda but it just optimizes the body -- only define calls optimize_lambda?
- *   could g_set_setter call it?  Then op_set1 needs to take advantage of it
- * let+lambda -- not set safe either? (check symbol_list collision)
- * int hash incr -- set immutable if read etc: perhaps use shack_int in hash_entry? iterator[cons case is safe]/hash-ref/set/display/incr/equal -- lots of complication
- * do_let extended to non-floats, other such cases (if branch, when, func arg etc)
- * unsafe tc in 2 ops: init: setup outer, push 2, uexpr->eval [probably op_closure_aa_o=laa, let_one_p_new]
- *                     2: value->inner, if expr, set outer, push 2, uexpr->eval
- *   are there other cases? can this include op_safe_closure* (unrechecked)?
- * split out vector cases in equals and (ci) check at top: t_structure_p (make teq more comprehensive)
- * is rec_p1 protected against fx_call->op_tc* using rec_p1?
- * alloc opt_func via block (need sizeof(opt_funcs):24 * #funcs) add_opt_func 55522 memory-usage entry, alloc_permanent_function 42527, 382 currently?
- * shack_function for c_object_t equal (parallel case + evenetual deprecation of current)
- * g_vector_n, fx_c_ss_direct: vector/memq/assq [vector_ref/list], sc: lt/gt/quotient/memq
- * vector_ref(set?)_p_pp could use is_normal_vector, then bypass (default_)vector_getter
- *   similarly for implicit vref? (needs additional ops) -- how often will this trigger unknown*?
- *   fx_if_s_cc (s=2outT)
- */

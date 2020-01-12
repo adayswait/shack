@@ -70,6 +70,13 @@ timing tests are in the shack tools directory
 <br/>
 <br/>
 
+#### build
+in Linux:  gcc shack.c -o repl -DWITH_MAIN -I. -O2 -g -ldl -lm -Wl,-export-dynamic<br/>
+in *BSD:   gcc shack.c -o repl -DWITH_MAIN -I. -O2 -g -lm -Wl,-export-dynamic<br/>
+in OSX:    gcc shack.c -o repl -DWITH_MAIN -I. -O2 -g -lm<br/>
+(clang also needs LDFLAGS="-Wl,-export-dynamic" in Linux and "-fPIC")<br/>
+<br/>
+
 #### naming conventions:
 shack_* usually are C accessible (shack.h), g_* are scheme accessible (FFI), <br/>
     H_* are documentation strings, Q_* are procedure signatures, <br/>

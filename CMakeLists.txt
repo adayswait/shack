@@ -1,5 +1,5 @@
-# CMakeList.txt: shack �� CMake ��Ŀ���ڴ˴�����Դ���벢����
-# ��Ŀ�ض����߼���
+# CMakeList.txt: shack 的 CMake 项目，在此处包括源代码并定义
+# 项目特定的逻辑。
 
 project(shack)
 
@@ -12,7 +12,7 @@ else(CMAKE_COMPILER_IS_GNUC)
     add_definitions(-DWITH_MAIN)
 endif(CMAKE_COMPILER_IS_GNUC)
 
-# ��Դ�������ӵ�����Ŀ�Ŀ�ִ���ļ���
+# 将源代码添加到此项目的可执行文件。
 add_executable (shack "shack.c" "shack.h")
 
-# TODO: ������Ҫ�������Ӳ��Բ���װĿ�ꡣ
+# TODO: 如有需要，请添加测试并安装目标。
