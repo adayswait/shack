@@ -8,7 +8,7 @@ if(CMAKE_COMPILER_IS_GNUC)
     SET (CMAKE_C_FLAGS "-I. -O2 -g -ldl -lm -Wl,-export-dynamic")
     add_definitions(-DWITH_MAIN)
 else(CMAKE_COMPILER_IS_GNUC)
-    SET (CMAKE_C_FLAGS "-I. /Ot /GL /GS /Zi")
+    SET (CMAKE_C_FLAGS "-I. /Ot /GS /Zi")
     add_definitions(-DWITH_MAIN)
 endif(CMAKE_COMPILER_IS_GNUC)
 
