@@ -4,13 +4,13 @@
 project(shack)
 
 cmake_minimum_required (VERSION 3.8)
-if(CMAKE_COMPILER_IS_GNUC)
+if(CMAKE_COMPILER_IS_GNUCXX)
     SET (CMAKE_C_FLAGS "-I. -O2 -g -ldl -lm -Wl,-export-dynamic")
     add_definitions(-DWITH_MAIN)
-else(CMAKE_COMPILER_IS_GNUC)
+else(CMAKE_COMPILER_IS_GNUCXX)
     SET (CMAKE_C_FLAGS "-I. /Ot /GS /Zi")
     add_definitions(-DWITH_MAIN)
-endif(CMAKE_COMPILER_IS_GNUC)
+endif(CMAKE_COMPILER_IS_GNUCXX)
 
 # 将源代码添加到此项目的可执行文件。
 add_executable (shack "shack.c" "shack.h")
