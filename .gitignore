@@ -2,6 +2,7 @@ libc_shack.c
 libc_shack.so
 out
 .vs
+.vscode
 CMakeLists.txt
 CMakeFiles
 cmake_install.cmake

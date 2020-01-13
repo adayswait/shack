@@ -72,14 +72,18 @@ timing tests are in the shack tools directory
 <br/>
 
 #### build
-in Linux:  gcc shack.c -o shack -DWITH_MAIN -I. -O2 -g -ldl -lm -Wl,-export-dynamic<br/>
-in *BSD:   gcc shack.c -o shack -DWITH_MAIN -I. -O2 -g -lm -Wl,-export-dynamic<br/>
-in OSX:    gcc shack.c -o shack -DWITH_MAIN -I. -O2 -g -lm<br/>
+using CMake : cmake . && make <br/>
+in Linux    : gcc shack.c -o shack -DWITH_MAIN -I. -O2 -g -ldl -lm -Wl,-export-dynamic<br/>
+in *BSD     : gcc shack.c -o shack -DWITH_MAIN -I. -O2 -g -lm -Wl,-export-dynamic<br/>
+in OSX      : gcc shack.c -o shack -DWITH_MAIN -I. -O2 -g -lm<br/>
 (clang also needs LDFLAGS="-Wl,-export-dynamic" in Linux and "-fPIC")<br/>
 <br/>
 
 #### naming conventions:
-shack_* usually are C accessible (shack.h), g_* are scheme accessible (FFI), <br/>
-    H_* are documentation strings, Q_* are procedure signatures, <br/>
-    *_1 are ancillary functions, big_* refer to gmp, <br/>
-    scheme "?" corresponds to C "is_", scheme "->" to C "_to_".
+shack_*     : usually are C accessible (shack.h), g_* are scheme accessible (FFI) <br/>
+H_*         : documentation strings <br/>
+Q_*         : procedure signatures <br/>
+*_1         : are ancillary functions <br/>
+big_*       : refer to gmp, <br/>
+scheme "?"  : corresponds to C "is_" <br/>
+scheme "->" : to C "_to_" <br/>
