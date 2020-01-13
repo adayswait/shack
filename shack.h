@@ -2,11 +2,16 @@
 #define __SHACK_H__
 
 #define SHACK_VERSION "0.1"
-#define SHACK_DATE "2020-01-10"
+#define SHACK_DATE "2020-01-12"
 #include <stdint.h> /* for int64_t */
 
-typedef int64_t shack_int;   /* This sets the size of integers in Scheme; it needs to be big enough to accomodate a C pointer. */
-typedef double shack_double; /*   similarly for Scheme reals; only double works in C++ */
+
+/* This sets the size of integers in Scheme;
+   it needs to be big enough to accomodate a C pointer. */
+typedef int64_t shack_int;   
+
+/* similarly for Scheme reals; only double works in C++ */
+typedef double shack_double; 
 
 #ifndef __cplusplus
 #ifndef _MSC_VER
@@ -20,30 +25,15 @@ typedef double shack_double; /*   similarly for Scheme reals; only double works 
 #endif
 #endif
 
-#if defined(__linux__) || defined(__APPLE__)
-#ifdef __cplusplus
-#define HAVE_COMPLEX_NUMBERS 1
-#define HAVE_COMPLEX_TRIG 0
-#else
-#define HAVE_COMPLEX_NUMBERS 1
-#define HAVE_COMPLEX_TRIG 1
-#endif
-#elif defined(_WIN32)
-#define HAVE_COMPLEX_NUMBERS 0
-#define HAVE_COMPLEX_TRIG 0
-#define MUS_CONFIG_H_LOADED 1
-#else
-#define HAVE_COMPLEX_NUMBERS 0
-#define HAVE_COMPLEX_TRIG 0
-#endif
-
-/*
- * Your config file goes here, or just replace that #include line with the defines you need.
- * The compile-time switches involve booleans, complex numbers, and multiprecision arithmetic.
+/**
+ * Your config file goes here, or just replace that #include line with the
+ * defines you need.
+ * The compile-time switches involve booleans, complex numbers, and
+ * multiprecision arithmetic.
  * Currently we assume we have setjmp.h (used by the error handlers).
  *
- * Complex number support which is problematic in C++, Solaris, and netBSD
- *   is on the HAVE_COMPLEX_NUMBERS switch. In OSX or Linux, if you're not using C++,
+ * Complex number support which is problematic in C++, Solaris, and netBSD is on
+ * the HAVE_COMPLEX_NUMBERS switch. In OSX or Linux, if you're not using C++,
  *
  *   #define HAVE_COMPLEX_NUMBERS 1
  *   #define HAVE_COMPLEX_TRIG 1
@@ -55,15 +45,19 @@ typedef double shack_double; /*   similarly for Scheme reals; only double works 
  *
  *   In windows, both are 0.
  *
- *   Some systems (FreeBSD) have complex.h, but some random subset of the trig funcs, so
+ * Some systems (FreeBSD) have complex.h, but some random subset of the trig
+ * funcs, so
  *   HAVE_COMPLEX_NUMBERS means we can find
  *      cimag creal cabs csqrt carg conj
+ * 
  *   and HAVE_COMPLEX_TRIG means we have
- *      cacos cacosh casin casinh catan catanh ccos ccosh cexp clog cpow csin csinh ctan ctanh
+ *      cacos cacosh casin casinh catan catanh
+ *      ccos ccosh cexp clog cpow csin csinh ctan ctanh
  *
- * When HAVE_COMPLEX_NUMBERS is 0, the complex functions are stubs that simply return their
- *   argument -- this will be very confusing for the shack user because, for example, (sqrt -2)
- *   will return something bogus (it will not signal an error).
+ * When HAVE_COMPLEX_NUMBERS is 0, the complex functions are stubs that simply
+ * return their argument -- this will be very confusing for the shack user
+ * because, for example, (sqrt -2) will return something bogus (it will not
+ * signal an error).
  *
  * so the incoming (non-shack-specific) compile-time switches are
  *     HAVE_COMPLEX_NUMBERS, HAVE_COMPLEX_TRIG, SIZEOF_VOID_P
@@ -72,140 +66,31 @@ typedef double shack_double; /*   similarly for Scheme reals; only double works 
  *
  * To get multiprecision arithmetic, set WITH_GMP to 1.
  *   You'll also need libgmp, libmpfr, and libmpc (version 0.8.0 or later)
- *   In highly numerical contexts, the gmp version of shack is about 50(!) times slower than the non-gmp version.
+ *   In highly numerical contexts, the gmp version of shack is about 50(!) times
+ *   slower than the non-gmp version.
  *
- * and we use these predefined macros: __cplusplus, _MSC_VER, __GNUC__, __clang__, __ANDROID__
+ * and we use these predefined macros: __cplusplus, _MSC_VER, __GNUC__,
+ * __clang__, __ANDROID__
  *
- * if WITH_SYSTEM_EXTRAS is 1 (default is 1 unless _MSC_VER), various OS and file related functions are included.
+ * if WITH_SYSTEM_EXTRAS is 1 (default is 1 unless _MSC_VER), various OS and
+ * file related functions are included.
  * in openBSD I think you need to include -ftrampolines in CFLAGS.
- * if you want this file to compile into a stand-alone interpreter, define WITH_MAIN
+ * if you want this file to compile into a stand-alone interpreter,
+ * define WITH_MAIN
  *
- * -O3 produces segfaults, and is often slower than -O2 (at least according to callgrind)
+ * -O3 produces segfaults, and is often slower than -O2 (at least according to
+ *     callgrind)
  * -march=native seems to improve tree-vectorization which is important in Snd
  * -ffast-math makes a mess of NaNs, and does not appear to be faster
- * for timing tests, I use: -O2 -march=native -fomit-frame-pointer -funroll-loops
- *   some say -funroll-loops has no effect, but it is consistently faster (according to callgrind) in shack's timing tests
- * according to callgrind, clang is normally about 10% slower than gcc, and vectorization either doesn't work or is much worse than gcc's
- *   also g++ appears to be slightly slower than gcc
+ * 
+ * for timing tests, I use:-O2 -march=native -fomit-frame-pointer -funroll-loops
+ * some say -funroll-loops has no effect, but it is consistently faster
+ * (according to callgrind) in shack's timing tests
+ * 
+ * according to callgrind, clang is normally about 10% slower than gcc, and
+ * vectorization either doesn't work or is much worse than gcc's also g++
+ * appears to be slightly slower than gcc
  */
-
-#if (defined(__GNUC__) || defined(__clang__)) /* shack uses PRId64 so (for example) g++ 4.4 is too old */
-#define WITH_GCC 1
-#else
-#define WITH_GCC 0
-#endif
-
-/* ---------------- initial sizes ---------------- */
-
-#ifndef INITIAL_HEAP_SIZE
-#define INITIAL_HEAP_SIZE 128000
-#endif
-/* the heap grows as needed, this is its initial size.
- * If the initial heap is small, shack can run in about 2.5 Mbytes of memory. There are (many) cases where a bigger heap is faster.
- * The heap size must be a multiple of 32.  Each object takes 48 bytes.
- */
-
-#ifndef SYMBOL_TABLE_SIZE
-#define SYMBOL_TABLE_SIZE 32749
-#endif
-/* names are hashed into the symbol table (a vector) and collisions are chained as lists. */
-
-#ifndef INITIAL_STACK_SIZE
-#define INITIAL_STACK_SIZE 512
-#endif
-/* the stack grows as needed, each frame takes 4 entries, this is its initial size.
- * this needs to be big enough to handle the eval_c_string's at startup (ca 100)
- * In shacktest.scm, the maximum stack size is ca 440.  In snd-test.scm, it's ca 200.
- * This number matters only because call/cc copies the stack, which requires filling
- * the unused portion of the new stack, which requires memcpy of #<unspecified>'s.
- */
-
-#ifndef INITIAL_PROTECTED_OBJECTS_SIZE
-#define INITIAL_PROTECTED_OBJECTS_SIZE 16
-#endif
-/* a vector of objects that are (semi-permanently) protected from the GC, grows as needed */
-
-#ifndef GC_TEMPS_SIZE
-#define GC_TEMPS_SIZE 256
-#endif
-/* the number of recent objects that are temporarily gc-protected; 8 works for shacktest and snd-test.
- * For the FFI, this sets the lag between a call on shack_cons and the first moment when its result
- * might be vulnerable to the GC.
- */
-
-/* ---------------- scheme choices ---------------- */
-
-#ifndef WITH_GMP
-#define WITH_GMP 0
-/* this includes multiprecision arithmetic for all numeric types and functions, using gmp, mpfr, and mpc
-   * WITH_GMP adds the following functions: bignum and bignum?, and (*shack* 'bignum-precision)
-   * using gmp with precision=128 is about 50 times slower than using C doubles and int64_t.
-   */
-#endif
-
-#define DEFAULT_BIGNUM_PRECISION 128
-
-#ifndef WITH_PURE_SHACK
-#define WITH_PURE_SHACK 0
-#endif
-#if WITH_PURE_SHACK
-#define WITH_EXTRA_EXPONENT_MARKERS 0
-#define WITH_IMMUTABLE_UNQUOTE 1
-/* also omitted: *-ci* functions, char-ready?, cond-expand, multiple-values-bind|set!, call-with-values
-      *   and a lot more (inexact/exact, integer-length,  etc) -- see shack.html.
-      */
-#endif
-
-#ifndef WITH_EXTRA_EXPONENT_MARKERS
-#define WITH_EXTRA_EXPONENT_MARKERS 0
-#endif
-/* if 1, shack recognizes "d", "f", "l", and "s" as exponent markers, in addition to "e" (also "D", "F", "L", "S") */
-
-#ifndef WITH_SYSTEM_EXTRAS
-#define WITH_SYSTEM_EXTRAS (!_MSC_VER)
-/* this adds several functions that access file info, directories, times, etc
-   *    this may be replaced by the cload business below
-   */
-#endif
-
-#ifndef WITH_IMMUTABLE_UNQUOTE
-#define WITH_IMMUTABLE_UNQUOTE 0
-/* this removes the name "unquote" */
-#endif
-
-#ifndef WITH_C_LOADER
-#if WITH_GCC
-#define WITH_C_LOADER 1
-/* (load file.so [e]) looks for (e 'init_func) and if found, calls it
-   *   as the shared object init function.  If WITH_SYSTEM_EXTRAS is 0, the caller
-   *   needs to supply system and delete-file so that cload.scm works.
-   */
-#else
-#define WITH_C_LOADER 0
-#endif
-#endif
-
-#ifndef WITH_HISTORY
-#define WITH_HISTORY 0
-/* this includes a circular buffer of previous evaluations for debugging, ((owlet) 'error-history) and (*shack* 'history-size) */
-#endif
-
-#ifndef DEFAULT_HISTORY_SIZE
-#define DEFAULT_HISTORY_SIZE 8
-/* this is the default length of the eval history buffer */
-#endif
-#if WITH_HISTORY
-#define MAX_HISTORY_SIZE 1048576
-#endif
-
-#define DEFAULT_PRINT_LENGTH 32 /* (*shack* 'print-length) */
-
-#ifndef WITH_PROFILE
-#define WITH_PROFILE 0
-/* this includes profiling data collection accessible from scheme via the hash-table (*shack* 'profile-info) */
-#endif
-
-/* in case mus-config.h forgets these */
 #ifdef _MSC_VER
 #ifndef HAVE_COMPLEX_NUMBERS
 #define HAVE_COMPLEX_NUMBERS 0
@@ -227,6 +112,137 @@ typedef double shack_double; /*   similarly for Scheme reals; only double works 
 #endif
 #endif
 #endif
+
+
+
+ /* shack uses PRId64 so (for example) g++ 4.4 is too old */
+#if (defined(__GNUC__) || defined(__clang__))
+#define WITH_GCC 1
+#else
+#define WITH_GCC 0
+#endif
+
+/* ---------------- initial sizes ---------------- */
+
+/* the heap grows as needed, this is its initial size.
+ * If the initial heap is small, shack can run in about 2.5 Mbytes of memory.
+ * There are (many) cases where a bigger heap is faster.
+ * The heap size must be a multiple of 32.  Each object takes 48 bytes.*/
+#ifndef INITIAL_HEAP_SIZE
+#define INITIAL_HEAP_SIZE 128000
+#endif
+
+/* names are hashed into the symbol table (a vector) and collisions are chained
+   as lists. */
+#ifndef SYMBOL_TABLE_SIZE
+#define SYMBOL_TABLE_SIZE 32749
+#endif
+
+/* the stack grows as needed, each frame takes 4 entries, this is its initial
+ * size. this needs to be big enough to handle the eval_c_string's at
+ * startup (ca 100).
+ * In shacktest.scm, the maximum stack size is ca 440.  In snd-test.scm, it's
+ * ca 200.
+ * This number matters only because call/cc copies the stack, which requires
+ * filling the unused portion of the new stack, which requires memcpy of
+ * #<unspecified>'s. */
+#ifndef INITIAL_STACK_SIZE
+#define INITIAL_STACK_SIZE 512
+#endif
+
+/* a vector of objects that are (semi-permanently) protected from the GC,
+   grows as needed */
+#ifndef INITIAL_PROTECTED_OBJECTS_SIZE
+#define INITIAL_PROTECTED_OBJECTS_SIZE 16
+#endif
+
+
+/* the number of recent objects that are temporarily gc-protected;
+ * 8 works for shacktest and snd-test.
+ * For the FFI, this sets the lag between a call on shack_cons and the first
+ * moment when its result might be vulnerable to the GC. */
+#ifndef GC_TEMPS_SIZE
+#define GC_TEMPS_SIZE 256
+#endif
+
+/* ---------------- scheme choices ---------------- */
+
+
+/* this includes multiprecision arithmetic for all numeric types and functions,
+ * using gmp, mpfr, and mpc WITH_GMP adds the following functions: bignum and
+ * bignum?, and (*shack* 'bignum-precision)
+ * using gmp with precision=128 is about 50 times slower than using C doubles
+ * and int64_t. */
+#ifndef WITH_GMP
+#define WITH_GMP 0
+#endif
+
+#define DEFAULT_BIGNUM_PRECISION 128
+
+#ifndef WITH_PURE_SHACK
+#define WITH_PURE_SHACK 0
+#endif
+#if WITH_PURE_SHACK
+#define WITH_EXTRA_EXPONENT_MARKERS 0
+#define WITH_IMMUTABLE_UNQUOTE 1
+/* also omitted: *-ci* functions, char-ready?, cond-expand,
+ * multiple-values-bind|set!, call-with-values and a lot
+ * more (inexact/exact, integer-length,  etc) -- see shack.html.*/
+#endif
+
+/* if 1, shack recognizes "d", "f", "l", and "s" as exponent markers,
+ * in addition to "e" (also "D", "F", "L", "S") */
+#ifndef WITH_EXTRA_EXPONENT_MARKERS
+#define WITH_EXTRA_EXPONENT_MARKERS 0
+#endif
+
+
+/* this adds several functions that access file info, directories, times, etc
+ * this may be replaced by the cload business below */
+#ifndef WITH_SYSTEM_EXTRAS
+#define WITH_SYSTEM_EXTRAS (!_MSC_VER)
+#endif
+
+#ifndef WITH_IMMUTABLE_UNQUOTE
+#define WITH_IMMUTABLE_UNQUOTE 0
+/* this removes the name "unquote" */
+#endif
+
+#ifndef WITH_C_LOADER
+#if WITH_GCC
+#define WITH_C_LOADER 1
+/* (load file.so [e]) looks for (e 'init_func) and if found, calls it
+ * as the shared object init function.  If WITH_SYSTEM_EXTRAS is 0, the caller
+ * needs to supply system and delete-file so that cload.scm works.
+ */
+#else
+#define WITH_C_LOADER 0
+#endif
+#endif
+
+#ifndef WITH_HISTORY
+#define WITH_HISTORY 0
+/* this includes a circular buffer of previous evaluations for debugging,
+ * ((owlet) 'error-history) and (*shack* 'history-size) */
+#endif
+
+#ifndef DEFAULT_HISTORY_SIZE
+#define DEFAULT_HISTORY_SIZE 8
+/* this is the default length of the eval history buffer */
+#endif
+#if WITH_HISTORY
+#define MAX_HISTORY_SIZE 1048576
+#endif
+
+#define DEFAULT_PRINT_LENGTH 32 /* (*shack* 'print-length) */
+
+#ifndef WITH_PROFILE
+#define WITH_PROFILE 0
+/* this includes profiling data collection accessible from scheme via the
+ * hash-table (*shack* 'profile-info) */
+#endif
+
+
 
 #ifndef WITH_MULTITHREAD_CHECKS
 #define WITH_MULTITHREAD_CHECKS 0
@@ -281,7 +297,7 @@ typedef double shack_double; /*   similarly for Scheme reals; only double works 
 #ifndef R_OK
 #define R_OK 4 /* Check for read permission */
 #endif
-#pragma warning(disable : 4244) /* conversion might cause loss of data warning */
+#pragma warning(disable : 4244) /* conversion might cause loss of data warning*/
 #endif
 
 #ifndef WITH_VECTORIZE
@@ -335,7 +351,8 @@ typedef double shack_double; /*   similarly for Scheme reals; only double works 
 #endif
 
 #ifndef CMPLX
-#if (!(defined(__cplusplus))) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && !defined(__INTEL_COMPILER)
+#if (!(defined(__cplusplus))) && (__GNUC__ > 4 || \
+(__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && !defined(__INTEL_COMPILER)
 #define CMPLX(x, y) __builtin_complex((double)(x), (double)(y))
 #else
 #define CMPLX(r, i) ((r) + ((i)*_Complex_I))
@@ -907,13 +924,13 @@ extern "C"
         SHACK_IS_CHAR_READY
     } shack_read_t;
     shack_pointer shack_open_output_function(shack_scheme *sc,
-                                             void (*function)(shack_scheme *sc,
-                                                              uint8_t c,
-                                                              shack_pointer port));
+        void (*function)(shack_scheme *sc,
+                        uint8_t c,
+                        shack_pointer port));
     shack_pointer shack_open_input_function(shack_scheme *sc,
-                                            shack_pointer (*function)(shack_scheme *sc,
-                                                                      shack_read_t read_choice,
-                                                                      shack_pointer port));
+        shack_pointer (*function)(shack_scheme *sc,
+                                    shack_read_t read_choice,
+                                    shack_pointer port));
 
     /* (read-char port) */
     shack_pointer shack_read_char(shack_scheme *sc, shack_pointer port);

@@ -3,7 +3,8 @@ https://ccrma.stanford.edu/software/snd/snd/s7.html
 ## shack, a Scheme interpreter
 
 #### history
-2020-01-11 : change macro FILENAME_MAX to MAX_PATH_LEN, judge _CRT_FUNCTIONS_REQUIRED, change qsort_s param type
+2020-01-11 : change macro FILENAME_MAX to MAX_PATH_LEN, judge _CRT_FUNCTIONS_REQUIRED, 
+change qsort_s param type, build on windows 10
 <br/>
 2020-01-10 : the begining, change "s7*" to "shack*", build on linux(debian 8)
 <br/>
@@ -71,9 +72,9 @@ timing tests are in the shack tools directory
 <br/>
 
 #### build
-in Linux:  gcc shack.c -o repl -DWITH_MAIN -I. -O2 -g -ldl -lm -Wl,-export-dynamic<br/>
-in *BSD:   gcc shack.c -o repl -DWITH_MAIN -I. -O2 -g -lm -Wl,-export-dynamic<br/>
-in OSX:    gcc shack.c -o repl -DWITH_MAIN -I. -O2 -g -lm<br/>
+in Linux:  gcc shack.c -o shack -DWITH_MAIN -I. -O2 -g -ldl -lm -Wl,-export-dynamic<br/>
+in *BSD:   gcc shack.c -o shack -DWITH_MAIN -I. -O2 -g -lm -Wl,-export-dynamic<br/>
+in OSX:    gcc shack.c -o shack -DWITH_MAIN -I. -O2 -g -lm<br/>
 (clang also needs LDFLAGS="-Wl,-export-dynamic" in Linux and "-fPIC")<br/>
 <br/>
 
